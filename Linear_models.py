@@ -37,8 +37,8 @@ scaler = StandardScaler()
 Xtr = scaler.fit_transform(Xtr)
 Xte = scaler.transform(Xte)
 
-models = [RidgeClassifier(class_weight='balanced'), LogisticRegression(class_weight='balanced')] #, SVC(kernel='linear', class_weight='balanced')
-model_names = ["RidgeClass", "LogisticReg"] #, "LinSVC"
+models = [RidgeClassifier(class_weight='balanced'), LogisticRegression(class_weight='balanced'), SVC(kernel='linear', class_weight='balanced')]
+model_names = ["RidgeClass", "LogisticReg", "LinSVC"]
 
 res = []
 for model, name in zip(models, model_names):
