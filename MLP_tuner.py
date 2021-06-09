@@ -1,24 +1,13 @@
 import tensorflow as tf
 from tensorflow import keras
-from kerastuner.tuners import RandomSearch
+from kerastuner.tuners import RandomSearch, BayesianOptimization, Hyperband
 import kerastuner
-import os
-
-import matplotlib as mpl
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import seaborn as sns
-
-from sklearn.metrics import confusion_matrix
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
-from sklearn.metrics import f1_score, accuracy_score
 
-mpl.rcParams['figure.figsize'] = (10, 10)
-colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
 
-np.random.seed(0)
 ############################# DATA PREPARATION ###############################
 
 # Load data
@@ -110,12 +99,27 @@ METRICS = [
 ]
 
 
+callbacks = [
+    tf.keras.callbacks.EarlyStopping(
+        monitor='val_prc',
+        verbose=1,
+        patience=15,
+        mode='max',
+        restore_best_weights=True),
+    keras.callbacks.ReduceLROnPlateau(
+        monitor='val_prc',
+        mode='max',
+        factor=0.5, 
+        patience=5)
+    ]
+
+
 def build_model(hp):
     model = keras.Sequential()
     for i in range(hp.Int('num_layers', min_value=2, max_value=5)):
-        model.add(keras.layers.Dense(units=hp.Int('units_' + str(i), min_value=16, max_value=128, step=32),
+        model.add(keras.layers.Dense(units= hp.Choice('units_' + str(i), [16, 32, 64, 128]), #hp.Int('units_' + str(i), min_value=16, max_value=128, step=32),
                                      activation=None,
-                                     kernel_regularizer=tf.keras.regularizers.l2(hp.Choice('l2_reg', [1e-3, 1e-4, 1e-5]))
+                                     kernel_regularizer=tf.keras.regularizers.l2(hp.Choice('l2_reg', [0.0, 1e-5, 1e-4, 1e-3]))
                                      )
                   )
         model.add(keras.layers.BatchNormalization())
@@ -131,10 +135,10 @@ def build_model(hp):
     return model
 
 
-tuner = RandomSearch(
+tuner = BayesianOptimization(
     build_model,
     objective=kerastuner.Objective("val_prc", direction="max"),
-    max_trials=20,
+    max_trials=500,
     executions_per_trial=1,
     directory='keras_tuner',
     project_name='basic_MLP')
@@ -145,10 +149,35 @@ print(tuner.search_space_summary())
 
 tuner.search(resampled_features, 
              resampled_labels,
-             epochs=20,
+             epochs=1000,
              batch_size=32,
              validation_data=(val_features, val_labels),
+             callbacks=callbacks,
              verbose=2
              )
 
 print(tuner.results_summary())
+
+
+
+
+# from sklearn import model_selection
+# class CVTuner(kerastuner.engine.tuner.Tuner):
+#   def run_trial(self, trial, x, y, batch_size=32, epochs=1):
+#     cv = model_selection.KFold(5)
+#     val_losses = []
+#     for train_indices, test_indices in cv.split(x):
+#       x_train, x_test = x[train_indices], x[test_indices]
+#       y_train, y_test = y[train_indices], y[test_indices]
+#       model = self.hypermodel.build(trial.hyperparameters)
+#       model.fit(x_train, y_train, batch_size=batch_size, epochs=epochs)
+#       val_losses.append(model.evaluate(x_test, y_test))
+#     self.oracle.update_trial(trial.trial_id, {'val_loss': np.mean(val_losses)})
+#     self.save_model(trial.trial_id, model)
+# tuner = CVTuner(
+#   hypermodel=build_model,
+#   oracle=kerastuner.oracles.BayesianOptimization(
+#     objective='val_loss',
+#     max_trials=40))
+# x, y = ...  # NumPy data
+# tuner.search(x, y, batch_size=64, epochs=30)

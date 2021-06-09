@@ -94,6 +94,14 @@ print("resampled_features shape:", resampled_features.shape)
 
 ############################# MODEL DEFINITION ###############################
 
+EPOCHS = 1000
+BATCH_SIZE = 32
+L2_REG = 1e-3
+ACTIV = 'elu'
+LR = 5e-3
+DROP_RATE = 0
+UNITS = [48, 112, 16]
+
 # Metrics that are monitored during training
 METRICS = [
       # keras.metrics.TruePositives(name='tp'),
@@ -111,23 +119,18 @@ METRICS = [
 def make_model(metrics=METRICS, output_bias=None):
   if output_bias is not None:
     output_bias = tf.keras.initializers.Constant(output_bias)
-  model = keras.Sequential([
-      keras.layers.Dense(32, activation='relu',
-                         kernel_regularizer=tf.keras.regularizers.l2(1e-4),
-                         input_shape=(train_features.shape[-1],)),
-      keras.layers.Dropout(0.5),
-      keras.layers.Dense(32, activation='elu', kernel_regularizer=tf.keras.regularizers.l2(1e-4),),
-      keras.layers.Dropout(0.5),
-      keras.layers.Dense(32, activation='relu', kernel_regularizer=tf.keras.regularizers.l2(1e-4),),
-      keras.layers.Dropout(0.5),
-      keras.layers.Dense(32, activation='relu', kernel_regularizer=tf.keras.regularizers.l2(1e-4),),
-      keras.layers.Dropout(0.5),
-       keras.layers.Dense(1, activation='sigmoid', bias_initializer=output_bias),
-      # keras.layers.Dense(2, activation='softmax', bias_initializer=output_bias),
-  ])
+  model = keras.Sequential()
+  for units in UNITS:
+      
+      model.add(keras.layers.Dense(units, activation=None, kernel_regularizer=tf.keras.regularizers.l2(L2_REG)))
+      model.add(keras.layers.BatchNormalization())
+      model.add(keras.layers.Activation(ACTIV))
+      model.add(keras.layers.Dropout(DROP_RATE))
+      
+  model.add(keras.layers.Dense(1, activation='sigmoid'))
 
   model.compile(
-      optimizer=keras.optimizers.Adam(lr=1e-3),
+      optimizer=keras.optimizers.Adam(lr=LR),
        loss=keras.losses.BinaryCrossentropy(),
       # loss=keras.losses.CategoricalCrossentropy(),
        metrics=metrics
@@ -136,9 +139,6 @@ def make_model(metrics=METRICS, output_bias=None):
 
   return model
 
-
-EPOCHS = 1000
-BATCH_SIZE = 32
 
 callbacks = [
     tf.keras.callbacks.EarlyStopping(
@@ -167,7 +167,7 @@ resampled_history = model.fit(
     callbacks=callbacks,
     validation_data=(val_features, val_labels),
     # class_weight=class_weight
-    class_weight={0: 1, 1: 5}
+    class_weight={0: 1, 1: 1}
     )
 
 
