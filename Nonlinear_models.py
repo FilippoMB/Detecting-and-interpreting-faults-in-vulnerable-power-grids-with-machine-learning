@@ -13,14 +13,14 @@ model_name = "OCSVM"
 cross_validation = False
 
 # Load data
-faults = pd.read_csv('Failure_Senja grid.csv')
+faults = pd.read_csv('Failure_Senja grid 12.csv')
 faults_clean = faults.dropna(axis='rows', how='any')
-X = faults_clean.values[:,1:5].astype(np.float32)
-y = faults_clean.values[:,5].astype(np.int)
-feature_names = faults_clean.columns[1:5]
+X = faults_clean.values[:,1:-1].astype(np.float32)
+y = faults_clean.values[:,-1].astype(np.int)
+feature_names = faults_clean.columns[1:-1]
 
 # Subsample the non-fault class
-sampling_rate=6
+sampling_rate=60
 neg_idx = np.where(y==0)[0]
 delete_idx = np.setdiff1d(neg_idx, neg_idx[::sampling_rate])
 X = np.delete(X, delete_idx, axis=0)
@@ -42,11 +42,11 @@ yte_weights[yte_weights==1] = neg
 
 
 if model_name == "MLP":
-    model = MLPClassifier(hidden_layer_sizes=(32,32), max_iter=200, activation='relu', alpha=1e-3)
+    model = MLPClassifier(hidden_layer_sizes=(32,32), max_iter=500, activation='relu', batch_size=200, solver='adam', alpha=1e-2)
 elif model_name == "SVC":
     model = SVC(kernel='rbf', class_weight='balanced')
 elif model_name == "OCSVM":
-    model = OneClassSVM(kernel='rbf')
+    model = OneClassSVM(kernel='rbf', nu=0.1, gamma='auto')
     # y = y*2-1
 
 # Compute metrics

@@ -1,5 +1,7 @@
 import tensorflow as tf
 from tensorflow import keras
+from kerastuner.tuners import RandomSearch
+import kerastuner
 import os
 
 import matplotlib as mpl
@@ -100,7 +102,7 @@ METRICS = [
       keras.metrics.FalsePositives(name='fp'),
       # keras.metrics.TrueNegatives(name='tn'),
       keras.metrics.FalseNegatives(name='fn'), 
-      # keras.metrics.BinaryAccuracy(name='accuracy'),
+      keras.metrics.BinaryAccuracy(name='accuracy'),
       # keras.metrics.Precision(name='precision'),
       # keras.metrics.Recall(name='recall'),
       # keras.metrics.AUC(name='auc'),
@@ -108,113 +110,45 @@ METRICS = [
 ]
 
 
-def make_model(metrics=METRICS, output_bias=None):
-  if output_bias is not None:
-    output_bias = tf.keras.initializers.Constant(output_bias)
-  model = keras.Sequential([
-      keras.layers.Dense(32, activation='relu',
-                         kernel_regularizer=tf.keras.regularizers.l2(1e-4),
-                         input_shape=(train_features.shape[-1],)),
-      keras.layers.Dropout(0.5),
-      keras.layers.Dense(32, activation='elu', kernel_regularizer=tf.keras.regularizers.l2(1e-4),),
-      keras.layers.Dropout(0.5),
-      keras.layers.Dense(32, activation='relu', kernel_regularizer=tf.keras.regularizers.l2(1e-4),),
-      keras.layers.Dropout(0.5),
-      keras.layers.Dense(32, activation='relu', kernel_regularizer=tf.keras.regularizers.l2(1e-4),),
-      keras.layers.Dropout(0.5),
-       keras.layers.Dense(1, activation='sigmoid', bias_initializer=output_bias),
-      # keras.layers.Dense(2, activation='softmax', bias_initializer=output_bias),
-  ])
-
-  model.compile(
-      optimizer=keras.optimizers.Adam(lr=1e-3),
-       loss=keras.losses.BinaryCrossentropy(),
-      # loss=keras.losses.CategoricalCrossentropy(),
-       metrics=metrics
-      # metrics = keras.metrics.CategoricalAccuracy(name='accuracy'),
-      )
-
-  return model
-
-
-EPOCHS = 1000
-BATCH_SIZE = 32
-
-callbacks = [
-    tf.keras.callbacks.EarlyStopping(
-        # monitor='val_loss',
-        monitor='val_prc',
-        verbose=1,
-        patience=30,
-        # mode='min',
-        mode='max',
-        restore_best_weights=True),
-    keras.callbacks.ReduceLROnPlateau(
-        # monitor="val_loss", 
-        monitor='val_prc',
-        mode='max',
-        factor=0.5, 
-        patience=10)
-    ]
-
-
-model = make_model()
-resampled_history = model.fit(
-    resampled_features,
-    resampled_labels,
-    epochs=EPOCHS,
-    batch_size=BATCH_SIZE,    
-    callbacks=callbacks,
-    validation_data=(val_features, val_labels),
-    # class_weight=class_weight
-    class_weight={0: 1, 1: 5}
-    )
-
-
-# Print the value of the metrics at the end of the training
-results = model.evaluate(test_features, test_labels, batch_size=BATCH_SIZE, verbose=0)
-for name, value in zip(model.metrics_names, results):
-  print(name, ': ', value)
-print()
-
-############################# PLOTS ###############################
-
-# Function to plot the confusion matrix
-def plot_cm(labels, predictions, p=0.5):
-    cm = confusion_matrix(labels, predictions > p)
-    plt.figure(figsize=(5,5))
-    sns.heatmap(cm, annot=True, fmt="d")
-    plt.title('Confusion matrix @{:.2f}'.format(p))
-    plt.ylabel('Actual label')
-    plt.xlabel('Predicted label')
+def build_model(hp):
+    model = keras.Sequential()
+    for i in range(hp.Int('num_layers', min_value=2, max_value=5)):
+        model.add(keras.layers.Dense(units=hp.Int('units_' + str(i), min_value=16, max_value=128, step=32),
+                                     activation=None,
+                                     kernel_regularizer=tf.keras.regularizers.l2(hp.Choice('l2_reg', [1e-3, 1e-4, 1e-5]))
+                                     )
+                  )
+        model.add(keras.layers.BatchNormalization())
+        model.add(keras.layers.Activation(hp.Choice('activation', ['relu', 'elu', 'tanh'])))
+        model.add(keras.layers.Dropout(hp.Choice('dropout', [0.0, 0.1, 0.3, 0.5])))
+    model.add(keras.layers.Dense(1, activation='sigmoid'))
     
-    print('True Negatives: ', cm[0][0])
-    print('False Positives: ', cm[0][1])
-    print('False Negatives: ', cm[1][0])
-    print('True Positives: ', cm[1][1])
-    print('Total faults: ', np.sum(cm[1]))
-    plt.show()
-  
-  
-# Confusion matrix
-test_predictions = model.predict(test_features, batch_size=BATCH_SIZE)
-# plot_cm(test_labels.argmax(axis=-1), test_predictions.argmax(axis=-1), p=0.5)
-plot_cm(test_labels, test_predictions, p=0.5)
-
-
-# Function that plots how the metrics on training and validation set change during the training
-def plot_metrics(history):
-    metrics = ['loss', 'prc',] #'prc', 'precision', 'recall'
-    for n, metric in enumerate(metrics):
-        name = metric.replace("_"," ").capitalize()
-        plt.subplot(1,2,n+1)
-        plt.plot(history.epoch, history.history[metric], color=colors[0], label='Train')
-        plt.plot(history.epoch, history.history['val_'+metric],
-                 color=colors[1], linestyle="--", label='Val')
-        plt.xlabel('Epoch')
-        plt.ylabel(name)
-        plt.legend()
-    plt.show()
+    model.compile(
+        optimizer=keras.optimizers.Adam(hp.Choice('learning_rate', [1e-2, 1e-3, 1e-4])),
+        loss=keras.losses.BinaryCrossentropy(),
+        metrics=METRICS)
     
-# Make the plots
-plot_metrics(resampled_history)
+    return model
+
+
+tuner = RandomSearch(
+    build_model,
+    objective=kerastuner.Objective("val_prc", direction="max"),
+    max_trials=20,
+    executions_per_trial=1,
+    directory='keras_tuner',
+    project_name='basic_MLP')
+
+
+print(tuner.search_space_summary())
+
+
+tuner.search(resampled_features, 
+             resampled_labels,
+             epochs=20,
+             batch_size=32,
+             validation_data=(val_features, val_labels),
+             verbose=2
+             )
+
+print(tuner.results_summary())
