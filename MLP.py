@@ -93,11 +93,11 @@ print("resampled_features shape:", resampled_features.shape)
 
 EPOCHS = 1000
 BATCH_SIZE = 32
-L2_REG = 0.0
-ACTIV = 'tanh'
-LR = 5e-3
+L2_REG = 1e-5
+ACTIV = 'relu'
+LR = 1e-4
 DROP_RATE = 0.5
-UNITS = [96, 16, 48]
+UNITS = [32, 64, 128]
 
 # Metrics that are monitored during training
 METRICS = [

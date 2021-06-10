@@ -50,7 +50,7 @@ callbacks = [
         verbose=1,
         patience=15,
         mode='max',
-        restore_best_weights=False #True
+        restore_best_weights=True
         ),
     keras.callbacks.ReduceLROnPlateau(
         monitor='val_prc',
@@ -70,18 +70,18 @@ def build_model(hp):
                   )
         model.add(keras.layers.BatchNormalization())
         model.add(keras.layers.Activation(hp.Choice('activation', ['relu', 'elu', 'tanh'])))
-        model.add(keras.layers.Dropout(hp.Choice('dropout', [0.0, 0.1, 0.3, 0.5])))
+        model.add(keras.layers.Dropout(hp.Float('dropout', min_value=0.0, max_value=1.0, step=0.1)))
     model.add(keras.layers.Dense(1, activation='sigmoid'))
     
     model.compile(
-        optimizer=keras.optimizers.Adam(hp.Choice('learning_rate', [1e-2, 1e-3, 1e-4])),
+        optimizer=keras.optimizers.Adam(hp.Choice('learning_rate', [1e-2, 5e-3, 1e-3, 5e-4, 1e-4])),
         loss=keras.losses.BinaryCrossentropy(),
         metrics=METRICS)
     
     return model
 
 
-class CVTuner(kerastuner.engine.tuner.Tuner):
+class CVTuner(kerastuner.engine.multi_execution_tuner.MultiExecutionTuner):
     
     def run_trial(self, trial, x, y, n_folds=2, **kwargs):
         cv = model_selection.KFold(n_folds)
@@ -127,7 +127,7 @@ tuner = CVTuner(
     oracle=kerastuner.oracles.BayesianOptimization(
         objective=kerastuner.Objective("val_prc", direction="max"),
         max_trials=500),
-    # executions_per_trial=1,
+    executions_per_trial=1,
     directory='keras_tuner',
     project_name='basic_MLP_cv')
 

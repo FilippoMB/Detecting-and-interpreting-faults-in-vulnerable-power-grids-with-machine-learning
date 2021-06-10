@@ -103,7 +103,7 @@ callbacks = [
         verbose=1,
         patience=15,
         mode='max',
-        restore_best_weights=False #True
+        restore_best_weights=True
         ),
     keras.callbacks.ReduceLROnPlateau(
         monitor='val_prc',
