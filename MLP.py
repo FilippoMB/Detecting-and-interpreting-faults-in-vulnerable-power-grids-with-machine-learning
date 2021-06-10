@@ -1,13 +1,10 @@
 import tensorflow as tf
 from tensorflow import keras
-import os
-
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
-
 from sklearn.metrics import confusion_matrix
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
@@ -16,7 +13,7 @@ from sklearn.metrics import f1_score, accuracy_score
 mpl.rcParams['figure.figsize'] = (10, 10)
 colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
 
-# np.random.seed(0)
+np.random.seed(0)
 ############################# DATA PREPARATION ###############################
 
 # Load data
@@ -100,7 +97,7 @@ L2_REG = 0.0
 ACTIV = 'tanh'
 LR = 5e-3
 DROP_RATE = 0.5
-UNITS = [80, 16, 48]
+UNITS = [96, 16, 48]
 
 # Metrics that are monitored during training
 METRICS = [

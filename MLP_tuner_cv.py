@@ -126,12 +126,10 @@ tuner = CVTuner(
     hypermodel=build_model,
     oracle=kerastuner.oracles.BayesianOptimization(
         objective=kerastuner.Objective("val_prc", direction="max"),
-        max_trials=500,
-        # executions_per_trial=1,
-        # directory='keras_tuner',
-        # project_name='basic_MLP_cv'
-        )
-    )
+        max_trials=500),
+    # executions_per_trial=1,
+    directory='keras_tuner',
+    project_name='basic_MLP_cv')
 
 print(tuner.search_space_summary())
 
