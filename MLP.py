@@ -16,7 +16,7 @@ from sklearn.metrics import f1_score, accuracy_score
 mpl.rcParams['figure.figsize'] = (10, 10)
 colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
 
-np.random.seed(0)
+# np.random.seed(0)
 ############################# DATA PREPARATION ###############################
 
 # Load data
@@ -27,7 +27,7 @@ y = faults_clean.values[:,-1].astype(np.int)
 # feature_names = faults_clean.columns[1:-1]
 
 # Subsample the non-fault class
-sampling_rate=6
+sampling_rate=60
 neg_idx = np.where(y==0)[0]
 delete_idx = np.setdiff1d(neg_idx, neg_idx[::sampling_rate])
 y = np.delete(y, delete_idx)
@@ -96,11 +96,11 @@ print("resampled_features shape:", resampled_features.shape)
 
 EPOCHS = 1000
 BATCH_SIZE = 32
-L2_REG = 1e-3
-ACTIV = 'elu'
+L2_REG = 0.0
+ACTIV = 'tanh'
 LR = 5e-3
-DROP_RATE = 0
-UNITS = [48, 112, 16]
+DROP_RATE = 0.5
+UNITS = [80, 16, 48]
 
 # Metrics that are monitored during training
 METRICS = [

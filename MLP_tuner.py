@@ -7,6 +7,7 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 
+np.random.seed(0)
 
 ############################# DATA PREPARATION ###############################
 
@@ -18,7 +19,7 @@ y = faults_clean.values[:,-1].astype(np.int)
 # feature_names = faults_clean.columns[1:-1]
 
 # Subsample the non-fault class
-sampling_rate=6
+sampling_rate=60
 neg_idx = np.where(y==0)[0]
 delete_idx = np.setdiff1d(neg_idx, neg_idx[::sampling_rate])
 y = np.delete(y, delete_idx)
@@ -37,20 +38,17 @@ print('Weight for class 0: {:.2f}'.format(weight_for_0))
 print('Weight for class 1: {:.2f}'.format(weight_for_1))
 
 # Split and shuffle the dataset
-train_features, test_features, train_labels, test_labels = train_test_split(X, y, test_size=0.2, stratify=y, shuffle=True)
-train_features, val_features, train_labels, val_labels = train_test_split(train_features, train_labels, test_size=0.2, stratify=train_labels, shuffle=True)
+train_features, val_features, train_labels, val_labels = train_test_split(X, y, test_size=0.2, stratify=y, shuffle=True)
 
 # Normalize the features
 scaler = StandardScaler()
 train_features = scaler.fit_transform(train_features)
 val_features = scaler.transform(val_features)
-test_features = scaler.transform(test_features)
 print('Training features shape:', train_features.shape)
 print('Validation features shape:', val_features.shape)
-print('Test features shape:', test_features.shape)
 print('Training labels shape:', train_labels.shape)
 print('Validation labels shape:', val_labels.shape)
-print('Test labels shape:', test_labels.shape)
+
 
 # Oversample the minority class in the training set
 pos_features = train_features[train_labels==1]
@@ -105,7 +103,8 @@ callbacks = [
         verbose=1,
         patience=15,
         mode='max',
-        restore_best_weights=True),
+        restore_best_weights=False #True
+        ),
     keras.callbacks.ReduceLROnPlateau(
         monitor='val_prc',
         mode='max',
@@ -143,41 +142,15 @@ tuner = BayesianOptimization(
     directory='keras_tuner',
     project_name='basic_MLP')
 
-
 print(tuner.search_space_summary())
 
-
 tuner.search(resampled_features, 
-             resampled_labels,
-             epochs=1000,
-             batch_size=32,
-             validation_data=(val_features, val_labels),
-             callbacks=callbacks,
-             verbose=2
-             )
+              resampled_labels,
+              epochs=1000,
+              batch_size=32,
+              validation_data=(val_features, val_labels),
+              callbacks=callbacks,
+              verbose=2
+              )
 
 print(tuner.results_summary())
-
-
-
-
-# from sklearn import model_selection
-# class CVTuner(kerastuner.engine.tuner.Tuner):
-#   def run_trial(self, trial, x, y, batch_size=32, epochs=1):
-#     cv = model_selection.KFold(5)
-#     val_losses = []
-#     for train_indices, test_indices in cv.split(x):
-#       x_train, x_test = x[train_indices], x[test_indices]
-#       y_train, y_test = y[train_indices], y[test_indices]
-#       model = self.hypermodel.build(trial.hyperparameters)
-#       model.fit(x_train, y_train, batch_size=batch_size, epochs=epochs)
-#       val_losses.append(model.evaluate(x_test, y_test))
-#     self.oracle.update_trial(trial.trial_id, {'val_loss': np.mean(val_losses)})
-#     self.save_model(trial.trial_id, model)
-# tuner = CVTuner(
-#   hypermodel=build_model,
-#   oracle=kerastuner.oracles.BayesianOptimization(
-#     objective='val_loss',
-#     max_trials=40))
-# x, y = ...  # NumPy data
-# tuner.search(x, y, batch_size=64, epochs=30)
