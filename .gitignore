@@ -4,12 +4,14 @@ __pycache__/
 *$py.class
 
 keras_tuner/*
+saved_model/*
 
 # C extensions
 *.so
 
 *.csv
 *.pdf
+*.xlsx
 
 # Distribution / packaging
 .Python

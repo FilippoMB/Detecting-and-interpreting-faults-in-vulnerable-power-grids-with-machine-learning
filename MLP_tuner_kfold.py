@@ -70,7 +70,7 @@ def build_model(hp):
                   )
         model.add(keras.layers.BatchNormalization())
         model.add(keras.layers.Activation(hp.Choice('activation', ['relu', 'elu', 'tanh'])))
-        model.add(keras.layers.Dropout(hp.Float('dropout', min_value=0.0, max_value=1.0, step=0.1)))
+        model.add(keras.layers.Dropout(hp.Float('dropout', min_value=0.0, max_value=0.9, step=0.1)))
     model.add(keras.layers.Dense(1, activation='sigmoid'))
     
     model.compile(
@@ -83,12 +83,18 @@ def build_model(hp):
 
 class CVTuner(kerastuner.engine.multi_execution_tuner.MultiExecutionTuner):
     
+    def __init__(self, oracle, hypermodel, executions_per_trial, *args, **kwargs):
+        super().__init__(oracle=oracle, 
+                         hypermodel=hypermodel, 
+                         executions_per_trial=executions_per_trial, 
+                         *args, **kwargs)
+    
     def run_trial(self, trial, x, y, n_folds=2, **kwargs):
-        cv = model_selection.KFold(n_folds)
+        cv = model_selection.KFold(n_folds, random_state=0, shuffle=True)
         val_metrics = []
-        for train_indices, test_indices in cv.split(x):
-            x_train, x_val = x[train_indices], x[test_indices]
-            y_train, y_val = y[train_indices], y[test_indices]
+        for train_indices, val_indices in cv.split(x):
+            x_train, x_val = x[train_indices], x[val_indices]
+            y_train, y_val = y[train_indices], y[val_indices]
             
             # Balance the dataset manually by oversampling the positive class
             pos_x = x_train[y_train==1]
@@ -126,8 +132,8 @@ tuner = CVTuner(
     hypermodel=build_model,
     oracle=kerastuner.oracles.BayesianOptimization(
         objective=kerastuner.Objective("val_prc", direction="max"),
-        max_trials=500),
-    executions_per_trial=1,
+        max_trials=5000),
+    executions_per_trial=5, # doesn't work
     directory='keras_tuner',
     project_name='basic_MLP_cv')
 

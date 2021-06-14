@@ -9,6 +9,8 @@ from sklearn.metrics import confusion_matrix
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.metrics import f1_score, accuracy_score
+import csv   
+
 
 mpl.rcParams['figure.figsize'] = (10, 10)
 colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
@@ -21,6 +23,7 @@ faults = pd.read_csv('Failure_Senja grid 12.csv')
 faults_clean = faults.dropna(axis='rows', how='any')
 X = faults_clean.values[:,1:-1].astype(np.float32)
 y = faults_clean.values[:,-1].astype(np.int)
+X = np.concatenate((X, np.arange(X.shape[0])[...,None]), axis=-1) # keep track of the indices
 # feature_names = faults_clean.columns[1:-1]
 
 # Subsample the non-fault class
@@ -43,20 +46,25 @@ print('Weight for class 0: {:.2f}'.format(weight_for_0))
 print('Weight for class 1: {:.2f}'.format(weight_for_1))
 
 # Split and shuffle the dataset
-train_features, test_features, train_labels, test_labels = train_test_split(X, y, test_size=0.2, stratify=y, shuffle=True)
-train_features, val_features, train_labels, val_labels = train_test_split(train_features, train_labels, test_size=0.2, stratify=train_labels, shuffle=True)
+# train_features, test_features, train_labels, test_labels = train_test_split(X, y, test_size=0.2, stratify=y, shuffle=True)
+# train_features, val_features, train_labels, val_labels = train_test_split(train_features, train_labels, test_size=0.2, stratify=train_labels, shuffle=True)
+train_features, val_features, train_labels, val_labels = train_test_split(X, y, test_size=0.2, stratify=y, shuffle=True, random_state=0)
+train_idx, val_idx = train_features[:,-1].astype(np.int), val_features[:,-1].astype(np.int)
+train_features, val_features = train_features[:,:-1], val_features[:,:-1]
 
 # Normalize the features
 scaler = StandardScaler()
 train_features = scaler.fit_transform(train_features)
 val_features = scaler.transform(val_features)
-test_features = scaler.transform(test_features)
+# test_features = scaler.transform(test_features)
 print('Training features shape:', train_features.shape)
 print('Validation features shape:', val_features.shape)
-print('Test features shape:', test_features.shape)
+# print('Test features shape:', test_features.shape)
 print('Training labels shape:', train_labels.shape)
 print('Validation labels shape:', val_labels.shape)
-print('Test labels shape:', test_labels.shape)
+# print('Test labels shape:', test_labels.shape)
+test_features = val_features
+test_labels = val_labels
 
 # Oversample the minority class in the training set
 pos_features = train_features[train_labels==1]
@@ -93,11 +101,25 @@ print("resampled_features shape:", resampled_features.shape)
 
 EPOCHS = 1000
 BATCH_SIZE = 32
-L2_REG = 1e-5
-ACTIV = 'relu'
-LR = 1e-4
-DROP_RATE = 0.5
-UNITS = [32, 64, 128]
+
+
+L2_REG = 0
+ACTIV = 'tanh'
+LR = 1e-2
+DROP_RATE = 0
+UNITS = [128, 16, 128, 128, 64]
+
+# L2_REG = 1e-3
+# ACTIV = 'elu'
+# LR = 5e-4
+# DROP_RATE = 0.5
+# UNITS = [16, 16, 64, 16, 16]
+
+# L2_REG = 0.0
+# ACTIV = 'tanh'
+# LR = 1e-2
+# DROP_RATE = 0.0
+# UNITS = [128, 16]
 
 # Metrics that are monitored during training
 METRICS = [
@@ -194,9 +216,10 @@ def plot_cm(labels, predictions, p=0.5):
   
   
 # Confusion matrix
-test_predictions = model.predict(test_features, batch_size=BATCH_SIZE)
-# plot_cm(test_labels.argmax(axis=-1), test_predictions.argmax(axis=-1), p=0.5)
-plot_cm(test_labels, test_predictions, p=0.5)
+predictions = model.predict(test_features, batch_size=BATCH_SIZE)
+predictions = np.round(predictions)[:,0]
+# plot_cm(test_labels.argmax(axis=-1), predictions.argmax(axis=-1), p=0.5)
+plot_cm(test_labels, predictions, p=0.5)
 
 
 # Function that plots how the metrics on training and validation set change during the training
@@ -215,3 +238,20 @@ def plot_metrics(history):
     
 # Make the plots
 plot_metrics(resampled_history)
+
+
+false_neg_idx = []
+true_pos_idx = []
+for yt, yp, vid in zip(test_labels, predictions, val_idx):
+    if yt==1 and yp==0:
+        false_neg_idx.append(vid)
+    elif yt==1 and yp==1:
+        true_pos_idx.append(vid)
+print("false_neg_idx", false_neg_idx)
+print("true_pos_idx", true_pos_idx)
+with open(r'false_neg.csv', 'a', newline='') as f:
+    writer = csv.writer(f)
+    writer.writerow(false_neg_idx)
+    
+false_negatives = faults_clean.iloc[false_neg_idx]
+true_positives = faults_clean.iloc[true_pos_idx]

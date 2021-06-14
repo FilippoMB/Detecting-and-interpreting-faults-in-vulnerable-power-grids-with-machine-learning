@@ -38,7 +38,7 @@ print('Weight for class 0: {:.2f}'.format(weight_for_0))
 print('Weight for class 1: {:.2f}'.format(weight_for_1))
 
 # Split and shuffle the dataset
-train_features, val_features, train_labels, val_labels = train_test_split(X, y, test_size=0.2, stratify=y, shuffle=True)
+train_features, val_features, train_labels, val_labels = train_test_split(X, y, test_size=0.2, stratify=y, shuffle=True, random_state=0)
 
 # Normalize the features
 scaler = StandardScaler()
@@ -123,7 +123,7 @@ def build_model(hp):
                   )
         model.add(keras.layers.BatchNormalization())
         model.add(keras.layers.Activation(hp.Choice('activation', ['relu', 'elu', 'tanh'])))
-        model.add(keras.layers.Dropout(hp.Choice('dropout', [0.0, 0.1, 0.3, 0.5])))
+        model.add(keras.layers.Dropout(hp.Float('dropout', min_value=0.0, max_value=0.9, step=0.1)))
     model.add(keras.layers.Dense(1, activation='sigmoid'))
     
     model.compile(
@@ -138,7 +138,7 @@ tuner = BayesianOptimization(
     build_model,
     objective=kerastuner.Objective("val_prc", direction="max"),
     max_trials=500,
-    executions_per_trial=1,
+    executions_per_trial=3,
     directory='keras_tuner',
     project_name='basic_MLP')
 
