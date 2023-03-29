@@ -201,7 +201,7 @@ print(TP_df)
 
 
 # %% Select the sample to test with IGs
-sample_idx = 304
+sample_idx = 52
 sample_X = val_features[sample_idx]
 sample_y = val_labels[sample_idx]
 
@@ -223,42 +223,78 @@ logits_z = model(tf.expand_dims(baseline_z, axis=0))
 baseline_r = tf.random.uniform(shape=train_features[0].shape)
 logits_r = model(tf.expand_dims(baseline_r, axis=0))
 
-fig = plt.figure(figsize=(10, 5))
-plt.subplot(2, 3, 1)
-plt.bar(np.arange(logits_m.shape[-1]), logits_m[0,:], color='orange')
-plt.gca().set_title('Mean baseline')
-plt.gca().set_xlabel('Logits')
-plt.gca().set_xticks([0,1])
-plt.subplot(2, 3, 4)
-plt.bar(np.arange(logits_m.shape[-1]), tf.nn.softmax(logits_m, axis=-1)[0,:], color='orange')
-plt.gca().set_ylim([0,1])
-plt.gca().set_xlabel('Class prob.')
-plt.gca().set_xticks([0,1])
-plt.subplot(2, 3, 2)
-plt.bar(np.arange(logits_z.shape[-1]), logits_z[0,:], color='orange')
-plt.gca().set_title('Zero baseline')
-plt.gca().set_xlabel('Logits')
-plt.gca().set_xticks([0,1])
-plt.subplot(2, 3, 5)
+# fig = plt.figure(figsize=(10, 5))
+# plt.subplot(2, 3, 1)
+# plt.bar(np.arange(logits_m.shape[-1]), logits_m[0,:], color='orange')
+# plt.gca().set_title('Mean baseline')
+# plt.gca().set_xlabel('Logits')
+# plt.gca().set_xticks([0,1])
+# plt.subplot(2, 3, 4)
+# plt.bar(np.arange(logits_m.shape[-1]), tf.nn.softmax(logits_m, axis=-1)[0,:], color='orange')
+# plt.gca().set_ylim([0,1])
+# plt.gca().set_xlabel('Class prob.')
+# plt.gca().set_xticks([0,1])
+# plt.subplot(2, 3, 2)
+# plt.bar(np.arange(logits_z.shape[-1]), logits_z[0,:], color='orange')
+# plt.gca().set_title('Zero baseline')
+# plt.gca().set_xlabel('Logits')
+# plt.gca().set_xticks([0,1])
+# plt.subplot(2, 3, 5)
+# plt.bar(np.arange(logits_z.shape[-1]), tf.nn.softmax(logits_z, axis=-1)[0,:], color='orange')
+# plt.gca().set_ylim([0,1])
+# plt.gca().set_xlabel('Class prob.')
+# plt.gca().set_xticks([0,1])
+# plt.subplot(2, 3, 3)
+# plt.bar(np.arange(logits_r.shape[-1]), logits_r[0,:], color='orange')
+# plt.gca().set_title('Random baseline')
+# plt.gca().set_xlabel('Logits')
+# plt.gca().set_xticks([0,1])
+# plt.subplot(2, 3, 6)
+# plt.bar(np.arange(logits_r.shape[-1]), tf.nn.softmax(logits_r, axis=-1)[0,:], color='orange')
+# plt.gca().set_ylim([0,1])
+# plt.gca().set_xlabel('Class prob.')
+# plt.gca().set_xticks([0,1])
+# plt.tight_layout()
+# plt.show()
+
+fig = plt.figure(figsize=(7, 3))
+plt.subplot(1, 3, 1)
 plt.bar(np.arange(logits_z.shape[-1]), tf.nn.softmax(logits_z, axis=-1)[0,:], color='orange')
+plt.gca().set_title('Zero baseline')
 plt.gca().set_ylim([0,1])
 plt.gca().set_xlabel('Class prob.')
 plt.gca().set_xticks([0,1])
-plt.subplot(2, 3, 3)
-plt.bar(np.arange(logits_r.shape[-1]), logits_r[0,:], color='orange')
-plt.gca().set_title('Random baseline')
-plt.gca().set_xlabel('Logits')
+plt.subplot(1, 3, 2)
+plt.bar(np.arange(logits_m.shape[-1]), tf.nn.softmax(logits_m, axis=-1)[0,:], color='orange')
+plt.gca().set_title('Mean baseline')
+plt.gca().set_ylim([0,1])
+plt.gca().set_xlabel('Class prob.')
 plt.gca().set_xticks([0,1])
-plt.subplot(2, 3, 6)
+plt.subplot(1, 3, 3)
+plt.gca().set_title('Random baseline')
 plt.bar(np.arange(logits_r.shape[-1]), tf.nn.softmax(logits_r, axis=-1)[0,:], color='orange')
 plt.gca().set_ylim([0,1])
 plt.gca().set_xlabel('Class prob.')
 plt.gca().set_xticks([0,1])
 plt.tight_layout()
+plt.savefig("baselines.pdf")
 plt.show()
+
 
 # Select the baseline to use
 baseline = baseline_m
+
+
+# Plot the baseline
+fig = plt.figure(figsize=(3.5, 4))
+ax = plt.gca()
+df = pd.DataFrame({"feat names": feature_names, "values": baseline})
+df.plot.bar(x="feat names", y="values", ax=ax, legend=False, color='k')
+ax.set_xlabel("")
+plt.title("Baseline")
+plt.tight_layout()
+plt.savefig("baseline.pdf")
+plt.show()
 
 # %% Check that the selected baseline works
 
@@ -300,6 +336,7 @@ for alpha, sample, proba in zip(alphas[0::10], interpolated_data[0::10], pred_pr
     ax2.set_xlabel("")
     ax2.set_ylim([0,1])
 plt.tight_layout()
+plt.savefig("interp.pdf")
 plt.show()
 
 
@@ -319,7 +356,7 @@ path_gradients = compute_gradients(
     target_class_idx=sample_y)
 
 
-plt.figure(figsize=(10, 4))
+plt.figure(figsize=(8, 3))
 ax1 = plt.subplot(1, 2, 1)
 ax1.plot(alphas, pred_proba[:, sample_y])
 ax1.set_title('Target class predicted probability over alpha')
@@ -336,6 +373,8 @@ ax2.set_title('Average feature gradients (normalized) over alpha')
 ax2.set_ylabel('Average feature gradients')
 ax2.set_xlabel('alpha')
 ax2.set_ylim([0, 1]);
+plt.tight_layout()
+plt.savefig("gradients.pdf")
 plt.show()
 
 
@@ -398,13 +437,13 @@ def integrated_gradients(baseline,
 ig_attributions = integrated_gradients(baseline=baseline,
                                         sample=sample_X,
                                         target_class_idx=sample_y,
-                                        m_steps=300)
+                                        m_steps=100)
 
 # Negative values correspond to parts of the sample that if moved closer to the baseline value 
 # would cause the prediction score to decrease. 
 # In contrast postivie values correspond to parts of the image that if they were moved away from the baseline value, 
 # the prediction score would increase.
-fig = plt.figure(figsize=(8, 4))
+fig = plt.figure(figsize=(7, 4))
 ax1 = plt.subplot(1, 2, 1)
 df1 = pd.DataFrame({"feat names": feature_names, "values": sample_X})
 df1.plot.bar(x="feat names", y="values", ax=ax1, legend=False)
@@ -412,9 +451,12 @@ ax1.set_xlabel("")
 ax1.set_title("Sample {} - {:s}".format(sample_idx, TP_df[TP_df["TP_idx"]==sample_idx]["Date"].values[0]))
 ax2 = plt.subplot(1, 2, 2)
 df2 = pd.DataFrame({"feat names": feature_names, "values": ig_attributions})
-df2.plot.bar(x="feat names", y="values", ax=ax2, legend=False, color='green')
+df2['positive'] = df2['values'] > 0
+df2.plot.bar(x="feat names", y="values", ax=ax2, legend=False, color=df2.positive.map({True: 'g', False: 'r'}))
 ax2.set_xlabel("")
 ax2.set_title("Integrated gradients")
+plt.tight_layout()
+plt.savefig("IG_example.pdf")
 plt.show()
 
 

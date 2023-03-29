@@ -34,17 +34,17 @@ BATCH_SIZE = 32
 # DROP_RATE = 0.5
 # UNITS = [16, 16, 64, 16, 16]
 
-# L2_REG = 1e-3
-# ACTIV = 'relu'
-# LR = 1e-2
-# DROP_RATE = 0.0
-# UNITS = [16, 16, 16, 16, 128]
-
-L2_REG = 1e-4
+L2_REG = 1e-3
 ACTIV = 'relu'
 LR = 1e-2
 DROP_RATE = 0.0
-UNITS = [16, 32, 32, 32, 32]
+UNITS = [16, 16, 16, 16, 128]
+
+# L2_REG = 1e-4
+# ACTIV = 'relu'
+# LR = 1e-2
+# DROP_RATE = 0.0
+# UNITS = [16, 32, 32, 32, 32]
 
 
 # Metrics that are monitored during training

@@ -137,7 +137,7 @@ def build_model(hp):
 tuner = BayesianOptimization(
     build_model,
     objective=kerastuner.Objective("val_prc", direction="max"),
-    max_trials=500,
+    max_trials=5000,
     executions_per_trial=3,
     directory='keras_tuner',
     project_name='basic_MLP')

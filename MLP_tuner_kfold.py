@@ -133,7 +133,7 @@ tuner = CVTuner(
     oracle=kerastuner.oracles.BayesianOptimization(
         objective=kerastuner.Objective("val_prc", direction="max"),
         max_trials=5000),
-    executions_per_trial=5, # doesn't work
+    executions_per_trial=1, # doesn't work to set it greater than 1, meaning that it does only 1 trial for each fold. this can be fixed by implementing the different runs in the "run_trial" function
     directory='keras_tuner',
     project_name='basic_MLP_cv')
 

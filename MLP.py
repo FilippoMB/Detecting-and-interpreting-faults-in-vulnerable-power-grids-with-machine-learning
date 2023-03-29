@@ -46,8 +46,6 @@ print('Weight for class 0: {:.2f}'.format(weight_for_0))
 print('Weight for class 1: {:.2f}'.format(weight_for_1))
 
 # Split and shuffle the dataset
-# train_features, test_features, train_labels, test_labels = train_test_split(X, y, test_size=0.2, stratify=y, shuffle=True)
-# train_features, val_features, train_labels, val_labels = train_test_split(train_features, train_labels, test_size=0.2, stratify=train_labels, shuffle=True)
 train_features, val_features, train_labels, val_labels = train_test_split(X, y, test_size=0.2, stratify=y, shuffle=True, random_state=0)
 train_idx, val_idx = train_features[:,-1].astype(np.int), val_features[:,-1].astype(np.int)
 train_features, val_features = train_features[:,:-1], val_features[:,:-1]
@@ -56,13 +54,10 @@ train_features, val_features = train_features[:,:-1], val_features[:,:-1]
 scaler = StandardScaler()
 train_features = scaler.fit_transform(train_features)
 val_features = scaler.transform(val_features)
-# test_features = scaler.transform(test_features)
 print('Training features shape:', train_features.shape)
 print('Validation features shape:', val_features.shape)
-# print('Test features shape:', test_features.shape)
 print('Training labels shape:', train_labels.shape)
 print('Validation labels shape:', val_labels.shape)
-# print('Test labels shape:', test_labels.shape)
 test_features = val_features
 test_labels = val_labels
 
@@ -90,12 +85,6 @@ resampled_labels = resampled_labels[order]
 
 print("resampled_features shape:", resampled_features.shape)
 
-# # One-hot encoding
-# resampled_labels = OneHotEncoder(sparse=False).fit_transform(resampled_labels.reshape(-1,1)).astype(np.int)
-# val_labels = OneHotEncoder(sparse=False).fit_transform(val_labels.reshape(-1,1)).astype(np.int)
-# test_labels = OneHotEncoder(sparse=False).fit_transform(test_labels.reshape(-1,1)).astype(np.int)
-
-
 
 ############################# MODEL DEFINITION ###############################
 
@@ -103,17 +92,18 @@ EPOCHS = 1000
 BATCH_SIZE = 32
 
 
+# L2_REG = 1e-3
+# ACTIV = 'elu'
+# LR = 5e-4
+# DROP_RATE = 0.5
+# UNITS = [16, 16, 64, 16, 16]
+
 L2_REG = 0
 ACTIV = 'tanh'
 LR = 1e-2
 DROP_RATE = 0
 UNITS = [128, 16, 128, 128, 64]
 
-# L2_REG = 1e-3
-# ACTIV = 'elu'
-# LR = 5e-4
-# DROP_RATE = 0.5
-# UNITS = [16, 16, 64, 16, 16]
 
 # L2_REG = 0.0
 # ACTIV = 'tanh'
@@ -151,9 +141,7 @@ def make_model(metrics=METRICS, output_bias=None):
   model.compile(
       optimizer=keras.optimizers.Adam(lr=LR),
        loss=keras.losses.BinaryCrossentropy(),
-      # loss=keras.losses.CategoricalCrossentropy(),
        metrics=metrics
-      # metrics = keras.metrics.CategoricalAccuracy(name='accuracy'),
       )
 
   return model
@@ -185,8 +173,7 @@ resampled_history = model.fit(
     batch_size=BATCH_SIZE,    
     callbacks=callbacks,
     validation_data=(val_features, val_labels),
-    # class_weight=class_weight
-    class_weight={0: 1, 1: 1}
+    # class_weight=class_weight #{0: 1, 1: 1}
     )
 
 
@@ -218,7 +205,6 @@ def plot_cm(labels, predictions, p=0.5):
 # Confusion matrix
 predictions = model.predict(test_features, batch_size=BATCH_SIZE)
 predictions = np.round(predictions)[:,0]
-# plot_cm(test_labels.argmax(axis=-1), predictions.argmax(axis=-1), p=0.5)
 plot_cm(test_labels, predictions, p=0.5)
 
 
@@ -249,9 +235,9 @@ for yt, yp, vid in zip(test_labels, predictions, val_idx):
         true_pos_idx.append(vid)
 print("false_neg_idx", false_neg_idx)
 print("true_pos_idx", true_pos_idx)
-with open(r'false_neg.csv', 'a', newline='') as f:
-    writer = csv.writer(f)
-    writer.writerow(false_neg_idx)
+# with open(r'false_neg.csv', 'a', newline='') as f:
+#     writer = csv.writer(f)
+#     writer.writerow(false_neg_idx)
     
 false_negatives = faults_clean.iloc[false_neg_idx]
 true_positives = faults_clean.iloc[true_pos_idx]
