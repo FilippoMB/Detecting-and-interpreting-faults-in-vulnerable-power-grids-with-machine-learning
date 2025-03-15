@@ -1,13 +1,13 @@
 <p align="center"><h1 align="center">DETECTING-AND-INTERPRETING-FAULTS-IN-VULNERABLE-POWER-GRIDS-WITH-MACHINE-LEARNING</h1></p>
 
 <p align="center">
- <a href="https://arxiv.org/abs/2108.07060">
-  <img src="https://img.shields.io/badge/arXiv-2108.07060-b31b1b.svg?style=flat-square&logo=arxiv&logoColor=white" alt="arXiv">
- </a>
-	<img src="https://img.shields.io/github/license/FilippoMB/Detecting-and-interpreting-faults-in-vulnerable-power-grids-with-machine-learning?style=flat-square&logo=opensourceinitiative&logoColor=white&color=FF4B4B" alt="license">
-	<img src="https://img.shields.io/github/last-commit/FilippoMB/Detecting-and-interpreting-faults-in-vulnerable-power-grids-with-machine-learning?style=flat-square&logo=git&logoColor=white&color=FF4B4B" alt="last-commit">
-	<img src="https://img.shields.io/github/languages/top/FilippoMB/Detecting-and-interpreting-faults-in-vulnerable-power-grids-with-machine-learning?style=flat-square&color=FF4B4B" alt="repo-top-language">
-	<img src="https://img.shields.io/github/languages/count/FilippoMB/Detecting-and-interpreting-faults-in-vulnerable-power-grids-with-machine-learning?style=flat-square&color=FF4B4B" alt="repo-language-count">
+	<a href="https://arxiv.org/abs/2108.07060">
+	  <img src="https://img.shields.io/badge/arXiv-2108.07060-b31b1b.svg?style=flat-square&logo=arxiv&logoColor=white" alt="arXiv">
+	</a>
+	<img src="https://img.shields.io/github/license/FilippoMB/Detecting-and-interpreting-faults-in-vulnerable-power-grids-with-machine-learning?style=flat-square&logo=opensourceinitiative&logoColor=white&color=purple" alt="license">
+	<img src="https://img.shields.io/github/last-commit/FilippoMB/Detecting-and-interpreting-faults-in-vulnerable-power-grids-with-machine-learning?style=flat-square&logo=git&logoColor=white&color=green" alt="last-commit">
+	<img src="https://img.shields.io/github/languages/top/FilippoMB/Detecting-and-interpreting-faults-in-vulnerable-power-grids-with-machine-learning?style=flat-square&color=blue" alt="repo-top-language">
+	<img src="https://img.shields.io/github/languages/count/FilippoMB/Detecting-and-interpreting-faults-in-vulnerable-power-grids-with-machine-learning?style=flat-square&color=orange" alt="repo-language-count">
 </p>
 <p align="center">Built with the tools and technologies:</p>
 <p align="center">
@@ -50,7 +50,7 @@ Additionally, it utilizes interpretability methods to identify factors contribut
 
 ```sh
 └── Detecting-and-interpreting-faults-in-vulnerable-power-grids-with-machine-learning/
-    ├── Classification for imbalanced data with MLP.ipynb
+    ├── Classification-for-imbalanced-data-with-MLP.ipynb
     ├── Integrated_gradients.py
     ├── Linear_models.py
     ├── MLP.py
@@ -72,39 +72,39 @@ Additionally, it utilizes interpretability methods to identify factors contribut
 			<table>
 			<tr>
 				<td><b><a href='https://github.com/FilippoMB/Detecting-and-interpreting-faults-in-vulnerable-power-grids-with-machine-learning/blob/master/Classification for imbalanced data with MLP.ipynb'>Classification for imbalanced data with MLP.ipynb</a></b></td>
-				<td><code>❯ REPLACE-ME</code></td>
+				<td><code>❯ Example notebook </code></td>
 			</tr>
 			<tr>
 				<td><b><a href='https://github.com/FilippoMB/Detecting-and-interpreting-faults-in-vulnerable-power-grids-with-machine-learning/blob/master/Linear_models.py'>Linear_models.py</a></b></td>
-				<td><code>❯ REPLACE-ME</code></td>
+				<td><code>❯ Implementation of different linear models</code></td>
 			</tr>
 			<tr>
 				<td><b><a href='https://github.com/FilippoMB/Detecting-and-interpreting-faults-in-vulnerable-power-grids-with-machine-learning/blob/master/kfold_MLP.py'>kfold_MLP.py</a></b></td>
-				<td><code>❯ REPLACE-ME</code></td>
+				<td><code>❯ Implementation of the k-fold for model selection in the MLP</code></td>
 			</tr>
 			<tr>
 				<td><b><a href='https://github.com/FilippoMB/Detecting-and-interpreting-faults-in-vulnerable-power-grids-with-machine-learning/blob/master/MLP.py'>MLP.py</a></b></td>
-				<td><code>❯ REPLACE-ME</code></td>
+				<td><code>❯ Implementation of the MLP model</code></td>
 			</tr>
 			<tr>
 				<td><b><a href='https://github.com/FilippoMB/Detecting-and-interpreting-faults-in-vulnerable-power-grids-with-machine-learning/blob/master/Nonlinear_models.py'>Nonlinear_models.py</a></b></td>
-				<td><code>❯ REPLACE-ME</code></td>
+				<td><code>❯ Implementation of nonlinear models</code></td>
 			</tr>
 			<tr>
 				<td><b><a href='https://github.com/FilippoMB/Detecting-and-interpreting-faults-in-vulnerable-power-grids-with-machine-learning/blob/master/kfold_linear_models_and SVM.py'>kfold_linear_models_and SVM.py</a></b></td>
-				<td><code>❯ REPLACE-ME</code></td>
+				<td><code>❯ Implementation of the k-fold for model selection for linear models and SVM</code></td>
 			</tr>
 			<tr>
 				<td><b><a href='https://github.com/FilippoMB/Detecting-and-interpreting-faults-in-vulnerable-power-grids-with-machine-learning/blob/master/MLP_tuner_kfold.py'>MLP_tuner_kfold.py</a></b></td>
-				<td><code>❯ REPLACE-ME</code></td>
+				<td><code>❯ Implementation of the k-fold for model selection for the MLP tuner</code></td>
 			</tr>
 			<tr>
 				<td><b><a href='https://github.com/FilippoMB/Detecting-and-interpreting-faults-in-vulnerable-power-grids-with-machine-learning/blob/master/MLP_tuner.py'>MLP_tuner.py</a></b></td>
-				<td><code>❯ REPLACE-ME</code></td>
+				<td><code>❯ Implementation of the MLP tuner</code></td>
 			</tr>
 			<tr>
 				<td><b><a href='https://github.com/FilippoMB/Detecting-and-interpreting-faults-in-vulnerable-power-grids-with-machine-learning/blob/master/Integrated_gradients.py'>Integrated_gradients.py</a></b></td>
-				<td><code>❯ REPLACE-ME</code></td>
+				<td><code>❯ Implementation of the Integrated gradients</code></td>
 			</tr>
 			</table>
 		</blockquote>
@@ -138,25 +138,6 @@ Install Detecting-and-interpreting-faults-in-vulnerable-power-grids-with-machine
 ```
 
 3. Install the project dependencies:
-
-echo 'INSERT-INSTALL-COMMAND-HERE'
-
-
-
-###  Usage
-Run Detecting-and-interpreting-faults-in-vulnerable-power-grids-with-machine-learning using the following command:
-echo 'INSERT-RUN-COMMAND-HERE'
-
-###  Testing
-Run the test suite using the following command:
-echo 'INSERT-TEST-COMMAND-HERE'
-
----
-##  Project Roadmap
-
-- [X] **`Task 1`**: <strike>Implement feature one.</strike>
-- [ ] **`Task 2`**: Implement feature two.
-- [ ] **`Task 3`**: Implement feature three.
 
 ---
 
@@ -206,7 +187,6 @@ echo 'INSERT-TEST-COMMAND-HERE'
 ##  License
 
 This project is protected under the [SELECT-A-LICENSE](https://choosealicense.com/licenses) License. For more details, refer to the [LICENSE](https://choosealicense.com/licenses/) file.
-
 
 ---
  
